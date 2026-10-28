@@ -1,0 +1,2067 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulasi Algoritma Pencarian — SMKN 4 Banjarmasin</title>
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230f2557'/%3E%3Ccircle cx='28' cy='28' r='16' fill='none' stroke='%23ffd700' stroke-width='4'/%3E%3Cline x1='40' y1='40' x2='56' y2='56' stroke='%23ffd700' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --biru-tua: #0f2557;
+      --biru: #1e3c72;
+      --biru-muda: #2a5298;
+      --emas: #ffd700;
+      --emas-tua: #ffb300;
+      --hijau: #4caf50;
+      --merah: #ef5350;
+      --oranye: #ff9800;
+      --ungu: #7e57c2;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--biru-tua);
+      color: #fff;
+      min-height: 100vh;
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background:
+        radial-gradient(circle at 20% 30%, rgba(255, 215, 0, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(126, 87, 194, 0.1) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(42, 82, 152, 0.3) 0%, transparent 60%);
+      z-index: -2;
+      animation: bgShift 20s ease-in-out infinite;
+    }
+
+    @keyframes bgShift {
+
+      0%,
+      100% {
+        transform: scale(1) rotate(0deg);
+      }
+
+      50% {
+        transform: scale(1.1) rotate(2deg);
+      }
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image:
+        linear-gradient(rgba(255, 215, 0, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 215, 0, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ===== HEADER ===== */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      margin-bottom: 8px;
+      animation: slideDown 0.6s ease-out;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .header-icon {
+      width: 70px;
+      height: 70px;
+      flex-shrink: 0;
+      filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.5));
+      animation: iconFloat 3s ease-in-out infinite;
+    }
+
+    @keyframes iconFloat {
+
+      0%,
+      100% {
+        transform: translateY(0) rotate(-2deg);
+      }
+
+      50% {
+        transform: translateY(-8px) rotate(2deg);
+      }
+    }
+
+    h1 {
+      font-size: 2.4em;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff 0%, #ffd700 50%, #fff 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: shine 3s linear infinite;
+      letter-spacing: -0.5px;
+    }
+
+    @keyframes shine {
+      to {
+        background-position: 200% center;
+      }
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 1.05em;
+      opacity: 0.85;
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      animation: fadeIn 1s ease-out 0.3s both;
+    }
+
+    .subtitle .dot {
+      width: 8px;
+      height: 8px;
+      background: var(--emas);
+      border-radius: 50%;
+      animation: blink 1.5s infinite;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.3;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    /* ===== TAB ===== */
+    .tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 25px;
+      justify-content: center;
+      flex-wrap: wrap;
+      animation: fadeIn 1s ease-out 0.5s both;
+    }
+
+    .tab-btn {
+      padding: 16px 32px;
+      font-size: 1.05em;
+      font-weight: 700;
+      font-family: inherit;
+      border: 2px solid rgba(255, 215, 0, 0.3);
+      border-radius: 16px;
+      cursor: pointer;
+      background: rgba(15, 37, 87, 0.6);
+      color: rgba(255, 255, 255, 0.7);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      touch-action: manipulation;
+      min-width: 220px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tab-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .tab-btn:hover::before {
+      left: 100%;
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, var(--emas) 0%, var(--emas-tua) 100%);
+      color: var(--biru-tua);
+      border-color: var(--emas);
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 10px 30px rgba(255, 215, 0, 0.4), 0 0 40px rgba(255, 215, 0, 0.2);
+    }
+
+    .tab-btn:active {
+      transform: scale(0.97);
+    }
+
+    /* ===== PANEL ===== */
+    .panel {
+      display: none;
+      background: rgba(15, 37, 87, 0.5);
+      border-radius: 24px;
+      padding: 30px 30px 50px 30px;
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 215, 0, 0.15);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .panel.active {
+      display: block;
+      animation: panelIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes panelIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* ===== INFO BOX ===== */
+    .info-box {
+      background: linear-gradient(135deg, rgba(30, 60, 114, 0.8) 0%, rgba(15, 37, 87, 0.8) 100%);
+      padding: 20px 24px;
+      border-radius: 16px;
+      margin-bottom: 25px;
+      border-left: 5px solid var(--emas);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .info-box::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255, 215, 0, 0.05) 0%, transparent 70%);
+      animation: rotate 15s linear infinite;
+    }
+
+    @keyframes rotate {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .info-box h3 {
+      margin: 0 0 10px 0;
+      color: var(--emas);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.15em;
+      position: relative;
+    }
+
+    .info-box p {
+      margin: 6px 0;
+      line-height: 1.6;
+      position: relative;
+      font-size: 0.95em;
+    }
+
+    /* ===== KARTU ===== */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+      gap: 12px;
+      margin: 25px 0;
+      perspective: 1000px;
+      scroll-margin-top: 140px;
+    }
+
+    .card {
+      background: linear-gradient(135deg, rgba(42, 82, 152, 0.6) 0%, rgba(30, 60, 114, 0.6) 100%);
+      border: 2px solid rgba(255, 215, 0, 0.2);
+      border-radius: 14px;
+      padding: 18px 8px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 1.05em;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      min-height: 85px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      touch-action: manipulation;
+      user-select: none;
+      cursor: pointer;
+      overflow: hidden;
+      animation: cardEnter 0.5s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      scroll-margin-top: 140px;
+    }
+
+    @keyframes cardEnter {
+      from {
+        opacity: 0;
+        transform: translateY(20px) rotateX(-20deg);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) rotateX(0);
+      }
+    }
+
+    .card .index {
+      font-size: 0.65em;
+      opacity: 0.6;
+      margin-bottom: 5px;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 1px;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: radial-gradient(circle, rgba(255, 215, 0, 0.4) 0%, transparent 70%);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.5s, height 0.5s;
+      pointer-events: none;
+    }
+
+    .card:active::before {
+      width: 300px;
+      height: 300px;
+      transition: 0s;
+    }
+
+    .card.clickable {
+      border-color: var(--emas);
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.5), 0 4px 15px rgba(0, 0, 0, 0.3);
+      animation: cardPulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes cardPulse {
+
+      0%,
+      100% {
+        transform: translateY(0);
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.5), 0 4px 15px rgba(0, 0, 0, 0.3);
+      }
+
+      50% {
+        transform: translateY(-5px);
+        box-shadow: 0 0 30px rgba(255, 215, 0, 0.8), 0 8px 20px rgba(0, 0, 0, 0.4);
+      }
+    }
+
+    .card.clickable:hover {
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(255, 179, 0, 0.2) 100%);
+      transform: translateY(-5px) scale(1.05);
+    }
+
+    .card.checking {
+      background: linear-gradient(135deg, var(--oranye) 0%, #f57c00 100%);
+      color: #000;
+      transform: scale(1.12);
+      box-shadow: 0 0 30px rgba(255, 152, 0, 0.9), 0 0 60px rgba(255, 152, 0, 0.4);
+      animation: cardCheck 0.6s;
+    }
+
+    @keyframes cardCheck {
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.25) rotate(3deg);
+      }
+
+      100% {
+        transform: scale(1.12) rotate(0);
+      }
+    }
+
+    .card.checked {
+      background: rgba(30, 60, 114, 0.3);
+      opacity: 0.3;
+      border-color: rgba(255, 255, 255, 0.1);
+      cursor: not-allowed;
+      transform: scale(0.95);
+      filter: grayscale(0.5);
+    }
+
+    .card.found {
+      background: linear-gradient(135deg, var(--hijau) 0%, #2e7d32 100%);
+      color: #fff;
+      border-color: #66bb6a;
+      transform: scale(1.15);
+      box-shadow: 0 0 40px rgba(76, 175, 80, 1), 0 0 80px rgba(76, 175, 80, 0.5);
+      animation: cardFound 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes cardFound {
+      0% {
+        transform: scale(1);
+      }
+
+      40% {
+        transform: scale(1.4) rotate(-5deg);
+      }
+
+      70% {
+        transform: scale(1.2) rotate(5deg);
+      }
+
+      100% {
+        transform: scale(1.15) rotate(0);
+      }
+    }
+
+    .card.target {
+      border: 3px dashed var(--emas);
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    }
+
+    .card.in-range {
+      background: linear-gradient(135deg, rgba(100, 181, 246, 0.3) 0%, rgba(66, 165, 245, 0.2) 100%);
+      border-color: #64b5f6;
+    }
+
+    .card.out-range {
+      opacity: 0.15;
+      cursor: not-allowed;
+      transform: scale(0.9);
+      filter: grayscale(1);
+    }
+
+    .card.wrong {
+      animation: cardShake 0.5s;
+      background: linear-gradient(135deg, var(--merah) 0%, #c62828 100%) !important;
+      color: #fff !important;
+      border-color: #ef5350;
+      box-shadow: 0 0 30px rgba(239, 83, 80, 0.8);
+    }
+
+    @keyframes cardShake {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      20% {
+        transform: translateX(-10px) rotate(-3deg);
+      }
+
+      40% {
+        transform: translateX(10px) rotate(3deg);
+      }
+
+      60% {
+        transform: translateX(-8px) rotate(-2deg);
+      }
+
+      80% {
+        transform: translateX(8px) rotate(2deg);
+      }
+    }
+
+    /* ===== PROGRESS BAR (STICKY — TIDAK KETUTUPAN) ===== */
+    .progress-wrapper {
+      position: sticky;
+      top: 10px;
+      z-index: 100;
+      background: rgba(15, 37, 87, 0.97);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border-radius: 16px;
+      padding: 16px 22px;
+      margin: 20px 0;
+      border: 2px solid rgba(255, 215, 0, 0.4);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.15);
+      transition: all 0.3s;
+    }
+
+    .progress-wrapper.done {
+      border-color: var(--hijau);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6), 0 0 40px rgba(76, 175, 80, 0.4);
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 0.95em;
+      font-weight: 700;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .progress-header .title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--emas);
+    }
+
+    .progress-header .title svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .progress-header .count {
+      font-family: 'JetBrains Mono', monospace;
+      color: #fff;
+      background: rgba(255, 215, 0, 0.15);
+      padding: 5px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 215, 0, 0.4);
+      font-size: 0.9em;
+      white-space: nowrap;
+    }
+
+    .progress-container {
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 12px;
+      height: 20px;
+      overflow: hidden;
+      position: relative;
+      border: 2px solid rgba(255, 215, 0, 0.25);
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--emas) 0%, var(--emas-tua) 50%, var(--emas) 100%);
+      background-size: 200% auto;
+      border-radius: 8px;
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      animation: progressShine 2s linear infinite;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.3);
+      position: relative;
+    }
+
+    .progress-bar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, transparent 50%, rgba(0, 0, 0, 0.1) 100%);
+      border-radius: 8px;
+    }
+
+    @keyframes progressShine {
+      to {
+        background-position: 200% center;
+      }
+    }
+
+    .progress-marks {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 0.7em;
+      font-family: 'JetBrains Mono', monospace;
+      opacity: 0.6;
+      padding: 0 2px;
+    }
+
+    /* ===== TOMBOL ===== */
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 20px 0;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn {
+      padding: 15px 28px;
+      font-size: 1em;
+      font-weight: 700;
+      font-family: inherit;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      touch-action: manipulation;
+      min-height: 52px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255, 255, 255, 0.4);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.5s, height 0.5s;
+    }
+
+    .btn:active::after {
+      width: 400px;
+      height: 400px;
+      transition: 0s;
+    }
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .btn:active:not(:disabled) {
+      transform: translateY(0) scale(0.97);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--emas) 0%, var(--emas-tua) 100%);
+      color: var(--biru-tua);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      box-shadow: 0 8px 25px rgba(255, 215, 0, 0.5);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, rgba(42, 82, 152, 0.8) 0%, rgba(30, 60, 114, 0.8) 100%);
+      color: #fff;
+      border: 1px solid rgba(255, 215, 0, 0.3);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, var(--merah) 0%, #c62828 100%);
+      color: #fff;
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      box-shadow: 0 8px 25px rgba(239, 83, 80, 0.5);
+    }
+
+    .btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      filter: grayscale(0.5);
+    }
+
+    .btn-icon {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    /* ===== INPUT ===== */
+    .input-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 15px 0;
+    }
+
+    .input-group label {
+      font-weight: 600;
+      font-size: 0.95em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .input-group input {
+      padding: 13px 18px;
+      font-size: 1.05em;
+      font-family: 'JetBrains Mono', monospace;
+      border-radius: 12px;
+      border: 2px solid rgba(255, 215, 0, 0.3);
+      background: rgba(15, 37, 87, 0.6);
+      color: var(--emas);
+      width: 130px;
+      text-align: center;
+      font-weight: 700;
+      transition: all 0.3s;
+      outline: none;
+    }
+
+    .input-group input:focus {
+      border-color: var(--emas);
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+      background: rgba(15, 37, 87, 0.9);
+    }
+
+    /* ===== STATISTIK ===== */
+    .stats {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 25px 0;
+    }
+
+    .stat-box {
+      background: linear-gradient(135deg, rgba(30, 60, 114, 0.8) 0%, rgba(15, 37, 87, 0.8) 100%);
+      padding: 18px 28px;
+      border-radius: 16px;
+      text-align: center;
+      min-width: 150px;
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .stat-box:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255, 215, 0, 0.5);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .stat-box::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--emas), transparent);
+      animation: statShine 2s linear infinite;
+    }
+
+    @keyframes statShine {
+      0% {
+        transform: translateX(-100%);
+      }
+
+      100% {
+        transform: translateX(100%);
+      }
+    }
+
+    .stat-box .label {
+      font-size: 0.8em;
+      opacity: 0.7;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600;
+    }
+
+    .stat-box .value {
+      font-size: 2em;
+      font-weight: 800;
+      color: var(--emas);
+      font-family: 'JetBrains Mono', monospace;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+      transition: all 0.3s;
+    }
+
+    .stat-box .value.bump {
+      animation: valueBump 0.4s;
+    }
+
+    @keyframes valueBump {
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.3);
+        color: #fff;
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    /* ===== LOG ===== */
+    .log {
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 14px;
+      padding: 15px 20px;
+      max-height: 200px;
+      overflow-y: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9em;
+      margin-top: 20px;
+      border: 1px solid rgba(255, 215, 0, 0.15);
+      scrollbar-width: thin;
+      scrollbar-color: var(--emas) transparent;
+    }
+
+    .log::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .log::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .log::-webkit-scrollbar-thumb {
+      background: var(--emas);
+      border-radius: 3px;
+    }
+
+    .log-entry {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      animation: logSlide 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    @keyframes logSlide {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .log-entry::before {
+      content: '▸';
+      color: rgba(255, 215, 0, 0.5);
+      font-weight: bold;
+    }
+
+    .log-entry.success {
+      color: var(--hijau);
+      font-weight: 700;
+    }
+
+    .log-entry.success::before {
+      content: '✓';
+      color: var(--hijau);
+    }
+
+    .log-entry.check {
+      color: var(--oranye);
+    }
+
+    .log-entry.check::before {
+      content: '⚡';
+      color: var(--oranye);
+    }
+
+    .log-entry.info {
+      color: #64b5f6;
+    }
+
+    .log-entry.info::before {
+      content: 'ℹ';
+      color: #64b5f6;
+    }
+
+    .log-entry.error {
+      color: var(--merah);
+      font-weight: 700;
+      background: rgba(239, 83, 80, 0.1);
+      padding: 8px 10px;
+      border-radius: 8px;
+      border-left: 3px solid var(--merah);
+    }
+
+    .log-entry.error::before {
+      content: '✗';
+      color: var(--merah);
+    }
+
+    .log-entry.warning {
+      color: var(--oranye);
+      font-weight: 700;
+    }
+
+    .log-entry.warning::before {
+      content: '⚠';
+      color: var(--oranye);
+    }
+
+    /* ===== PESAN ===== */
+    .message {
+      text-align: center;
+      font-size: 1.15em;
+      font-weight: 700;
+      padding: 18px;
+      border-radius: 14px;
+      margin: 20px 0;
+      min-height: 30px;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .message::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transition: left 0.6s;
+    }
+
+    .message:hover::before {
+      left: 100%;
+    }
+
+    .message.success {
+      background: linear-gradient(135deg, rgba(76, 175, 80, 0.3) 0%, rgba(46, 125, 50, 0.3) 100%);
+      border: 2px solid var(--hijau);
+      color: #a5d6a7;
+      animation: messageSuccess 0.6s;
+    }
+
+    @keyframes messageSuccess {
+      0% {
+        transform: scale(0.9);
+      }
+
+      50% {
+        transform: scale(1.05);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .message.info {
+      background: linear-gradient(135deg, rgba(100, 181, 246, 0.2) 0%, rgba(66, 165, 245, 0.2) 100%);
+      border: 2px solid #64b5f6;
+      color: #90caf9;
+    }
+
+    .message.warning {
+      background: linear-gradient(135deg, rgba(255, 152, 0, 0.2) 0%, rgba(245, 124, 0, 0.2) 100%);
+      border: 2px solid var(--oranye);
+      color: #ffcc80;
+    }
+
+    .message.error {
+      background: linear-gradient(135deg, rgba(239, 83, 80, 0.3) 0%, rgba(198, 40, 40, 0.3) 100%);
+      border: 2px solid var(--merah);
+      color: #ef9a9a;
+      animation: messageError 0.5s;
+    }
+
+    @keyframes messageError {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      25% {
+        transform: translateX(-10px);
+      }
+
+      75% {
+        transform: translateX(10px);
+      }
+    }
+
+    /* ===== HINT BOX ===== */
+    .hint-box {
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.12) 0%, rgba(255, 179, 0, 0.08) 100%);
+      border: 2px dashed rgba(255, 215, 0, 0.5);
+      border-radius: 14px;
+      padding: 15px 22px;
+      margin: 15px 0;
+      text-align: center;
+      font-size: 1em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      animation: hintPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes hintPulse {
+
+      0%,
+      100% {
+        border-color: rgba(255, 215, 0, 0.5);
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.1);
+      }
+
+      50% {
+        border-color: rgba(255, 215, 0, 0.9);
+        box-shadow: 0 0 25px rgba(255, 215, 0, 0.3);
+      }
+    }
+
+    .hint-icon {
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+      animation: iconBounce 1s ease-in-out infinite;
+    }
+
+    @keyframes iconBounce {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-3px);
+      }
+    }
+
+    /* ===== SPEED CONTROL ===== */
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      justify-content: center;
+      margin: 15px 0;
+      font-size: 0.9em;
+      flex-wrap: wrap;
+    }
+
+    .speed-control input[type="range"] {
+      width: 180px;
+      accent-color: var(--emas);
+      cursor: pointer;
+    }
+
+    /* ===== CONFETTI ===== */
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      background: var(--emas);
+      pointer-events: none;
+      z-index: 9999;
+      border-radius: 2px;
+    }
+
+    @keyframes confettiFall {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    /* ===== MUTE BUTTON ===== */
+    .mute-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: rgba(15, 37, 87, 0.9);
+      border: 2px solid rgba(255, 215, 0, 0.3);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+    }
+
+    .mute-btn:hover {
+      border-color: var(--emas);
+      transform: scale(1.1);
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+    }
+
+    .mute-btn svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 600px) {
+      body {
+        padding: 12px;
+      }
+
+      h1 {
+        font-size: 1.7em;
+      }
+
+      .header-icon {
+        width: 50px;
+        height: 50px;
+      }
+
+      .card {
+        font-size: 0.9em;
+        min-height: 70px;
+        padding: 12px 5px;
+      }
+
+      .tab-btn {
+        padding: 14px 20px;
+        font-size: 1em;
+        min-width: 160px;
+      }
+
+      .panel {
+        padding: 20px 15px 40px 15px;
+      }
+
+      .btn {
+        padding: 12px 20px;
+        font-size: 0.9em;
+      }
+
+      .stat-box {
+        padding: 12px 18px;
+        min-width: 110px;
+      }
+
+      .stat-box .value {
+        font-size: 1.5em;
+      }
+
+      .progress-wrapper {
+        padding: 12px 16px;
+        top: 5px;
+      }
+
+      .progress-header {
+        font-size: 0.85em;
+      }
+
+      .progress-container {
+        height: 16px;
+      }
+
+      .progress-marks {
+        font-size: 0.6em;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Tombol mute suara -->
+  <button class="mute-btn" id="mute-btn" onclick="toggleMute()" title="Suara aktif/mati">
+    <svg id="mute-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="#ffd700" stroke="none" />
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" stroke="#ffd700" />
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14" stroke="#ffd700" />
+    </svg>
+  </button>
+
+  <div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+      <svg class="header-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#ffd700;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#ffb300;stop-opacity:1" />
+          </linearGradient>
+        </defs>
+        <rect width="64" height="64" rx="14" fill="#0f2557" />
+        <rect x="8" y="18" width="10" height="28" rx="2" fill="url(#grad1)" />
+        <rect x="22" y="18" width="10" height="28" rx="2" fill="url(#grad1)" opacity="0.6" />
+        <rect x="36" y="18" width="10" height="28" rx="2" fill="url(#grad1)" opacity="0.3" />
+        <circle cx="42" cy="32" r="12" fill="none" stroke="#fff" stroke-width="3" />
+        <line x1="51" y1="41" x2="58" y2="48" stroke="#fff" stroke-width="4" stroke-linecap="round" />
+      </svg>
+      <h1>Simulasi Pencarian</h1>
+    </div>
+    <p class="subtitle">
+      <span class="dot"></span>
+      Sentuh kartu secara berurutan — SMKN 4 Banjarmasin
+      <span class="dot"></span>
+    </p>
+
+    <!-- TAB -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('sequential')">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="3" width="7" height="7" rx="1" />
+          <rect x="3" y="14" width="7" height="7" rx="1" />
+          <rect x="14" y="14" width="7" height="7" rx="1" />
+        </svg>
+        Sequential Search
+      </button>
+      <button class="tab-btn" onclick="switchTab('binary')">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="2" x2="12" y2="22" />
+          <line x1="2" y1="12" x2="22" y2="12" />
+        </svg>
+        Binary Search
+      </button>
+    </div>
+
+    <!-- ==================== SEQUENTIAL ==================== -->
+    <div id="panel-sequential" class="panel active">
+      <div class="info-box">
+        <h3>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffd700" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" />
+            <rect x="14" y="14" width="7" height="7" rx="1" />
+          </svg>
+          Sequential Search (Pencarian Sekuensial)
+        </h3>
+        <p><strong>Cara kerja:</strong> Memeriksa data <em>satu per satu dari awal</em> sampai data ditemukan.</p>
+        <p><strong>Syarat data:</strong> Bebas — boleh terurut, boleh tidak.</p>
+        <p><strong>Aturan main:</strong> Sentuh kartu <span style="color:#ffd700;font-weight:700;">mulai dari #1, lalu
+            #2, #3, ...</span> secara berurutan.</p>
+      </div>
+
+      <div class="input-group">
+        <label>Target nama:</label>
+        <input type="text" id="seq-target" value="DEWI" maxlength="10" style="text-transform:uppercase;">
+        <button class="btn btn-secondary" onclick="setSeqTarget()">Set Target</button>
+      </div>
+
+      <div class="controls">
+        <button class="btn btn-primary" id="seq-start" onclick="seqStart()">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5 3 19 12 5 21 5 3" />
+          </svg>
+          Mulai Pencarian
+        </button>
+        <button class="btn btn-primary" id="seq-auto" onclick="seqAuto()" disabled>
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+          </svg>
+          Jalankan Otomatis
+        </button>
+        <button class="btn btn-danger" onclick="seqReset()">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="1 4 1 10 7 10" />
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+          </svg>
+          Ulangi
+        </button>
+      </div>
+
+      <!-- PROGRESS BAR — Sequential (STICKY) -->
+      <div class="progress-wrapper" id="seq-progress-wrapper">
+        <div class="progress-header">
+          <div class="title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#ffd700" stroke-width="2">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+            </svg>
+            Progress Pencarian
+          </div>
+          <div class="count" id="seq-progress-label">0 / 15</div>
+        </div>
+        <div class="progress-container">
+          <div class="progress-bar" id="seq-progress-bar" style="width:0%"></div>
+        </div>
+        <div class="progress-marks">
+          <span>Mulai</span>
+          <span>25%</span>
+          <span>50%</span>
+          <span>75%</span>
+          <span>Selesai</span>
+        </div>
+      </div>
+
+      <div class="hint-box" id="seq-hint">
+        <svg class="hint-icon" viewBox="0 0 24 24" fill="none" stroke="#ffd700" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="16" x2="12" y2="12" />
+          <line x1="12" y1="8" x2="12.01" y2="8" />
+        </svg>
+        Sentuh kartu <strong>#1</strong> dulu untuk memulai pencarian.
+      </div>
+
+      <div class="speed-control">
+        <label>Kecepatan otomatis:</label>
+        <input type="range" id="seq-speed" min="300" max="1500" value="700" step="100">
+        <span id="seq-speed-label" style="font-family:'JetBrains Mono',monospace;color:#ffd700;">700ms</span>
+      </div>
+
+      <div class="stats">
+        <div class="stat-box">
+          <div class="label">Pemeriksaan</div>
+          <div class="value" id="seq-count">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="label">Posisi Target</div>
+          <div class="value" id="seq-pos">-</div>
+        </div>
+        <div class="stat-box">
+          <div class="label">Status</div>
+          <div class="value" id="seq-status" style="font-size:1.2em;">Siap</div>
+        </div>
+      </div>
+
+      <div class="cards-grid" id="seq-cards"></div>
+
+      <div class="message info" id="seq-message">Tekan "Mulai Pencarian", lalu sentuh kartu #1.</div>
+
+      <div class="log" id="seq-log">
+        <div class="log-entry info">Log pencarian akan muncul di sini...</div>
+      </div>
+    </div>
+
+    <!-- ==================== BINARY ==================== -->
+    <div id="panel-binary" class="panel">
+      <div class="info-box">
+        <h3>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffd700" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="2" x2="12" y2="22" />
+            <line x1="2" y1="12" x2="22" y2="12" />
+          </svg>
+          Binary Search (Pencarian Biner)
+        </h3>
+        <p><strong>Cara kerja:</strong> Membagi rentang data menjadi dua secara berulang, memeriksa nilai tengah.</p>
+        <p><strong>Syarat data:</strong> <span style="color:#ffd700;font-weight:700;">WAJIB sudah terurut!</span></p>
+        <p><strong>Aturan main:</strong> Sentuh kartu <span style="color:#ffd700;font-weight:700;">nilai tengah dari
+            rentang aktif</span>.</p>
+      </div>
+
+      <div class="input-group">
+        <label>Angka rahasia (1–30):</label>
+        <input type="number" id="bin-target" value="23" min="1" max="30">
+        <button class="btn btn-secondary" onclick="setBinTarget()">Set Target</button>
+        <button class="btn btn-secondary" onclick="binRandomTarget()">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <circle cx="15.5" cy="15.5" r="1.5" />
+            <circle cx="15.5" cy="8.5" r="1.5" />
+            <circle cx="8.5" cy="15.5" r="1.5" />
+          </svg>
+          Acak
+        </button>
+      </div>
+
+      <div class="controls">
+        <button class="btn btn-primary" id="bin-start" onclick="binStart()">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5 3 19 12 5 21 5 3" />
+          </svg>
+          Mulai Pencarian
+        </button>
+        <button class="btn btn-primary" id="bin-auto" onclick="binAuto()" disabled>
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+          </svg>
+          Jalankan Otomatis
+        </button>
+        <button class="btn btn-danger" onclick="binReset()">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="1 4 1 10 7 10" />
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+          </svg>
+          Ulangi
+        </button>
+      </div>
+
+      <!-- PROGRESS BAR — Binary (STICKY) -->
+      <div class="progress-wrapper" id="bin-progress-wrapper">
+        <div class="progress-header">
+          <div class="title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#ffd700" stroke-width="2">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+            </svg>
+            Progress Pencarian
+          </div>
+          <div class="count" id="bin-progress-label">0 / 5 tebakan</div>
+        </div>
+        <div class="progress-container">
+          <div class="progress-bar" id="bin-progress-bar" style="width:0%"></div>
+        </div>
+        <div class="progress-marks">
+          <span>Tebakan 1</span>
+          <span>2</span>
+          <span>3</span>
+          <span>4</span>
+          <span>5</span>
+        </div>
+      </div>
+
+      <div class="hint-box" id="bin-hint">
+        <svg class="hint-icon" viewBox="0 0 24 24" fill="none" stroke="#ffd700" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="16" x2="12" y2="12" />
+          <line x1="12" y1="8" x2="12.01" y2="8" />
+        </svg>
+        Sentuh kartu <strong>nilai tengah</strong> dari rentang 1–30 (yaitu <strong>15</strong>).
+      </div>
+
+      <div class="speed-control">
+        <label>Kecepatan otomatis:</label>
+        <input type="range" id="bin-speed" min="300" max="1500" value="700" step="100">
+        <span id="bin-speed-label" style="font-family:'JetBrains Mono',monospace;color:#ffd700;">700ms</span>
+      </div>
+
+      <div class="stats">
+        <div class="stat-box">
+          <div class="label">Tebakan</div>
+          <div class="value" id="bin-count">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="label">Rentang Aktif</div>
+          <div class="value" id="bin-range" style="font-size:1.4em;">1–30</div>
+        </div>
+        <div class="stat-box">
+          <div class="label">Status</div>
+          <div class="value" id="bin-status" style="font-size:1.2em;">Siap</div>
+        </div>
+      </div>
+
+      <div style="text-align:center; margin: 20px 0;">
+        <span style="font-size:1em;opacity:0.8;">Nilai tengah saat ini:</span>
+        <div id="bin-mid-display"
+          style="font-size:2.5em; font-weight:800; color:#ffd700; font-family:'JetBrains Mono',monospace; text-shadow: 0 0 30px rgba(255,215,0,0.6); transition: all 0.3s;">
+          -</div>
+      </div>
+
+      <div class="cards-grid" id="bin-cards"></div>
+
+      <div class="message info" id="bin-message">Tekan "Mulai Pencarian", lalu sentuh kartu nilai tengah.</div>
+
+      <div class="log" id="bin-log">
+        <div class="log-entry info">Log tebakan akan muncul di sini...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ============================================================
+       AUDIO (Web Audio API)
+       ============================================================ */
+    let audioCtx = null;
+    let soundEnabled = true;
+
+    function initAudio() {
+      if (!audioCtx) {
+        try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { }
+      }
+    }
+
+    function playTone(freq, duration, type = 'sine', volume = 0.15) {
+      if (!soundEnabled || !audioCtx) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function soundClick() { initAudio(); playTone(600, 0.08, 'square', 0.08); }
+    function soundCorrect() {
+      initAudio();
+      setTimeout(() => playTone(523, 0.1, 'sine', 0.15), 0);
+      setTimeout(() => playTone(659, 0.1, 'sine', 0.15), 100);
+      setTimeout(() => playTone(784, 0.2, 'sine', 0.15), 200);
+    }
+    function soundWrong() {
+      initAudio();
+      playTone(200, 0.15, 'sawtooth', 0.12);
+      setTimeout(() => playTone(150, 0.2, 'sawtooth', 0.12), 120);
+    }
+    function soundFound() {
+      initAudio();
+      const notes = [523, 659, 784, 1047];
+      notes.forEach((n, i) => setTimeout(() => playTone(n, 0.15, 'sine', 0.18), i * 100));
+    }
+    function soundCheck() { initAudio(); playTone(440, 0.06, 'triangle', 0.08); }
+
+    function toggleMute() {
+      soundEnabled = !soundEnabled;
+      const icon = document.getElementById('mute-icon');
+      if (soundEnabled) {
+        icon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="#ffd700" stroke="none"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07" stroke="#ffd700"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14" stroke="#ffd700"/>';
+      } else {
+        icon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="#666" stroke="none"/><line x1="23" y1="9" x2="17" y2="15" stroke="#666" stroke-width="2"/><line x1="17" y1="9" x2="23" y2="15" stroke="#666" stroke-width="2"/>';
+      }
+    }
+
+    /* ============================================================
+       CONFETTI
+       ============================================================ */
+    function launchConfetti() {
+      const colors = ['#ffd700', '#ffb300', '#4caf50', '#64b5f6', '#ef5350', '#7e57c2'];
+      for (let i = 0; i < 60; i++) {
+        const c = document.createElement('div');
+        c.className = 'confetti';
+        c.style.left = Math.random() * 100 + 'vw';
+        c.style.top = '-20px';
+        c.style.background = colors[Math.floor(Math.random() * colors.length)];
+        c.style.width = (Math.random() * 10 + 5) + 'px';
+        c.style.height = (Math.random() * 10 + 5) + 'px';
+        c.style.animation = `confettiFall ${Math.random() * 2 + 2}s linear forwards`;
+        c.style.animationDelay = Math.random() * 0.5 + 's';
+        c.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), 4500);
+      }
+    }
+
+    /* ============================================================
+       TAB SWITCHING
+       ============================================================ */
+    function switchTab(tab) {
+      soundClick();
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      if (tab === 'sequential') {
+        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        document.getElementById('panel-sequential').classList.add('active');
+      } else {
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        document.getElementById('panel-binary').classList.add('active');
+      }
+    }
+
+    /* ============================================================
+       ANIMASI VALUE BUMP
+       ============================================================ */
+    function bumpValue(id) {
+      const el = document.getElementById(id);
+      el.classList.remove('bump');
+      void el.offsetWidth;
+      el.classList.add('bump');
+    }
+
+    /* ============================================================
+       SEQUENTIAL SEARCH
+       ============================================================ */
+    const seqNames = ['BUDI', 'SITI', 'ANDI', 'RINA', 'DEWI', 'AGUS', 'LINA', 'DEDI', 'MAYA', 'TONO', 'SARI', 'WATI', 'EKO', 'NINA', 'BAYU'];
+    let seqTargetName = 'DEWI';
+    let seqIndex = 0, seqCount = 0, seqRunning = false, seqAutoTimer = null, seqFound = false;
+
+    const seqSpeedSlider = document.getElementById('seq-speed');
+    seqSpeedSlider.addEventListener('input', () => {
+      document.getElementById('seq-speed-label').textContent = seqSpeedSlider.value + 'ms';
+    });
+
+    function setSeqTarget() {
+      soundClick();
+      const val = document.getElementById('seq-target').value.trim().toUpperCase();
+      if (!seqNames.includes(val)) {
+        document.getElementById('seq-message').className = 'message warning';
+        document.getElementById('seq-message').textContent = 'Nama "' + val + '" tidak ada! Pilih: ' + seqNames.join(', ');
+        soundWrong();
+        return;
+      }
+      seqTargetName = val;
+      seqReset();
+      document.getElementById('seq-message').className = 'message info';
+      document.getElementById('seq-message').textContent = 'Target diubah ke "' + seqTargetName + '". Tekan "Mulai Pencarian".';
+    }
+
+    function renderSeqCards() {
+      const container = document.getElementById('seq-cards');
+      container.innerHTML = '';
+      seqNames.forEach((name, i) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.id = 'seq-card-' + i;
+        card.style.animationDelay = (i * 0.04) + 's';
+        card.innerHTML = '<div class="index">#' + (i + 1) + '</div>' + name;
+        if (name === seqTargetName) card.classList.add('target');
+        card.onclick = () => seqCardClick(i);
+        container.appendChild(card);
+      });
+    }
+
+    function updateSeqClickable() {
+      document.querySelectorAll('#seq-cards .card').forEach((c, i) => {
+        c.classList.remove('clickable');
+        if (seqRunning && !seqFound && i === seqIndex) c.classList.add('clickable');
+      });
+    }
+
+    function updateSeqProgress() {
+      const pct = (seqCount / seqNames.length) * 100;
+      const bar = document.getElementById('seq-progress-bar');
+      const label = document.getElementById('seq-progress-label');
+      const wrapper = document.getElementById('seq-progress-wrapper');
+
+      bar.style.width = pct + '%';
+      label.textContent = seqCount + ' / ' + seqNames.length;
+
+      if (seqFound) {
+        wrapper.classList.add('done');
+      } else {
+        wrapper.classList.remove('done');
+      }
+    }
+
+    function seqStart() {
+      soundClick();
+      if (seqRunning) return;
+      seqReset();
+      seqRunning = true;
+      document.getElementById('seq-status').textContent = 'Berjalan...';
+      document.getElementById('seq-message').className = 'message info';
+      document.getElementById('seq-message').textContent = 'Mencari "' + seqTargetName + '". Sentuh kartu #1!';
+      document.getElementById('seq-hint').innerHTML = '<svg class="hint-icon" viewBox="0 0 24 24" fill="none" stroke="#ffd700" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Sentuh kartu <strong>#' + (seqIndex + 1) + '</strong> (' + seqNames[seqIndex] + ').';
+      addSeqLog('info', 'Mulai mencari "' + seqTargetName + '" dalam 15 data.');
+      updateSeqClickable();
+    }
+
+    function seqCardClick(idx) {
+      if (seqFound) return;
+      if (!seqRunning) {
+        document.getElementById('seq-message').className = 'message warning';
+        document.getElementById('seq-message').textContent = 'Tekan "Mulai Pencarian" dulu!';
+        soundWrong();
+        return;
+      }
+      if (idx !== seqIndex) {
+        const card = document.getElementById('seq-card-' + idx);
+        card.classList.add('wrong');
+        setTimeout(() => card.classList.remove('wrong'), 500);
+        document.getElementById('seq-message').className = 'message error';
+        document.getElementById('seq-message').textContent = 'Salah urutan! Sequential Search harus memeriksa dari #' + (seqIndex + 1) + ' dulu.';
+        addSeqLog('error', 'Salah! Kamu menyentuh #' + (idx + 1) + ' (' + seqNames[idx] + '), padahal urutan yang benar sekarang adalah #' + (seqIndex + 1) + ' (' + seqNames[seqIndex] + ').');
+        soundWrong();
+        return;
+      }
+
+      const card = document.getElementById('seq-card-' + idx);
+      const name = seqNames[idx];
+      seqCount++;
+
+      card.classList.remove('clickable');
+      card.classList.add('checking');
+      document.getElementById('seq-count').textContent = seqCount;
+      bumpValue('seq-count');
+      document.getElementById('seq-pos').textContent = '#' + (idx + 1);
+      document.getElementById('seq-status').textContent = 'Memeriksa...';
+      soundCheck();
+      addSeqLog('check', 'Memeriksa #' + (idx + 1) + ': ' + name);
+      updateSeqProgress();
+
+      setTimeout(() => {
+        if (name === seqTargetName) {
+          seqFound = true; seqRunning = false;
+          card.classList.remove('checking');
+          card.classList.add('found');
+          document.getElementById('seq-status').textContent = 'Ditemukan!';
+          document.getElementById('seq-message').className = 'message success';
+          document.getElementById('seq-message').textContent = '"' + seqTargetName + '" ditemukan di posisi #' + (idx + 1) + ' setelah ' + seqCount + ' pemeriksaan!';
+          document.getElementById('seq-hint').innerHTML = '<svg class="hint-icon" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Selesai! Target ditemukan.';
+          addSeqLog('success', 'DITEMUKAN! "' + seqTargetName + '" di posisi #' + (idx + 1) + ' setelah ' + seqCount + ' pemeriksaan.');
+          soundFound();
+          launchConfetti();
+          updateSeqProgress();
+          updateSeqClickable();
+        } else {
+          card.classList.remove('checking');
+          card.classList.add('checked');
+          seqIndex++;
+          if (seqIndex >= seqNames.length) {
+            seqFound = true; seqRunning = false;
+            document.getElementById('seq-status').textContent = 'Tidak Ditemukan';
+            document.getElementById('seq-message').className = 'message warning';
+            document.getElementById('seq-message').textContent = '"' + seqTargetName + '" tidak ditemukan setelah memeriksa semua data.';
+            addSeqLog('warning', 'Target tidak ditemukan. Total: ' + seqCount);
+            document.getElementById('seq-hint').innerHTML = 'Selesai — target tidak ditemukan.';
+            updateSeqProgress();
+            updateSeqClickable();
+          } else {
+            document.getElementById('seq-status').textContent = 'Berjalan...';
+            document.getElementById('seq-hint').innerHTML = '<svg class="hint-icon" viewBox="0 0 24 24" fill="none" stroke="#ffd700" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Lanjut! Sentuh kartu <strong>#' + (seqIndex + 1) + '</strong> (' + seqNames[seqIndex] + ').';
+            updateSeqClickable();
+          }
+        }
+      }, 400);
+    }
+
+    function seqAuto() {
+      soundClick();
+      if (seqFound) return;
+      if (!seqRunning) seqStart();
+      const speed = parseInt(seqSpeedSlider.value);
+      const run = () => {
+        if (seqFound) { clearInterval(seqAutoTimer); return; }
+        if (seqIndex < seqNames.length) seqCardClick(seqIndex);
+        if (seqFound) clearInterval(seqAutoTimer);
+      };
+      seqAutoTimer = setInterval(run, speed + 400);
+      run();
+    }
+
+    function seqReset() {
+      clearInterval(seqAutoTimer);
+      seqIndex = 0; seqCount = 0; seqRunning = false; seqFound = false;
+      document.getElementById('seq-count').textContent = '0';
+      document.getElementById('seq-pos').textContent = '-';
+      document.getElementById('seq-status').textContent = 'Siap';
+      document.getElementById('seq-message').className = 'message info';
+      document.getElementById('seq-message').textContent = 'Tekan "Mulai Pencarian", lalu sentuh kartu #1.';
+      document.getElementById('seq-hint').innerHTML = '<svg class="hint-icon" viewBox="0 0 24 24" fill="none" stroke="#ffd700" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Sentuh kartu <strong>#1</strong> dulu untuk memulai pencarian.';
+      document.getElementById('seq-log').innerHTML = '<div class="log-entry info">Log pencarian akan muncul di sini...</div>';
+      document.getElementById('seq-progress-bar').style.width = '0%';
+      document.getElementById('seq-progress-label').textContent = '0 / 15';
+      document.getElementById('seq-progress-wrapper').classList.remove('done');
+      renderSeqCards();
+      updateSeqClickable();
+    }
+
+    function addSeqLog(type, text) {
+      const log = document.getElementById('seq-log');
+      const entry = document.createElement('div');
+      entry.className = 'log-entry ' + type;
+      entry.textContent = text;
+      log.appendChild(entry);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    /* ============================================================
+       BINARY SEARCH
+       ============================================================ */
+    const BIN_MAX = 30;
+    const BIN_MAX_TEBAKAN = 5; // log2(30) ≈ 5
+    let binTarget = 23, binLow = 1, binHigh = 30, binCount = 0;
+    let binRunning = false, binFound = false, binAutoTimer = null, binCurrentMid = null;
+
+    const binSpeedSlider = document.getElementById('bin-speed');
+    binSpeedSlider.addEventListener('input', () => {
+      document.getElementById('bin-speed-label').textContent = binSpeedSlider.value + 'ms';
+    });
+
+    function setBinTarget() {
+      soundClick();
+      const val = parseInt(document.getElementById('bin-target').value);
+      if (isNaN(val) || val < 1 || val > 30) {
+        document.getElementById('bin-message').className = 'message warning';
+        document.getElementById('bin-message').textContent = 'Masukkan angka antara 1 dan 30!';
+        soundWrong();
+        return;
+      }
+      binTarget = val;
+      binReset();
+      document.getElementById('bin-message').className = 'message info';
+      document.getElementById('bin-message').textContent = 'Angka rahasia diubah. Tekan "Mulai Pencarian".';
+    }
+
+    function binRandomTarget() {
+      soundClick();
+      binTarget = Math.floor(Math.random() * 30) + 1;
+      document.getElementById('bin-target').value = binTarget;
+      binReset();
+      document.getElementById('bin-message').className = 'message info';
+      document.getElementById('bin-message').textContent = 'Angka rahasia diacak! Tekan "Mulai Pencarian".';
+    }
+
+    function renderBinCards() {
+      const container = document.getElementById('bin-cards');
+      container.innerHTML = '';
+      for (let i = 1; i <= BIN_MAX; i++) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.id = 'bin-card-' + i;
+        card.style.animationDelay = (i * 0.02) + 's';
+        card.innerHTML = '<div class="index">#' + i + '</div>' + i;
+        card.onclick = () => binCardClick(i);
+        container.appendChild(card);
+      }
+    }
+
+    function updateBinCardStates() {
+      const mid = Math.floor((binLow + binHigh) / 2);
+      for (let i = 1; i <= BIN_MAX; i++) {
+        const card = document.getElementById('bin-card-' + i);
+        card.classList.remove('in-range', 'out-range', 'checking', 'found', 'clickable');
+        if (i < binLow || i > binHigh) {
+          card.classList.add('out-range');
+        } else {
+          card.classList.add('in-range');
+          if (binRunning && !binFound && i === mid) card.classList.add('clickable');
+        }
+        if (i === binCurrentMid) card.classList.add('checking');
+        if (binFound && i === binTarget) card.classList.add('found');
+      }
+    }
+
+    function updateBinProgress() {
+      const pct = Math.min((binCount / BIN_MAX_TEBAKAN) * 100, 100);
+      const bar = document.getElementById('bin-progress-bar');
+      const label = document.getElementById('bin-progress-label');
+      const wrapper = document.getElementById('bin-progress-wrapper');
+
+      bar.style.width = pct + '%';
+      label.textContent = binCount + ' / ' + BIN_MAX_TEBAKAN + ' tebakan';
+
+      if (binFound) {
+        wrapper.classList.add('done');
+      } else {
+        wrapper.classList.remove('done');
+      }
+    }
+
+    function binStart() {
+      soundClick();
+      if (binRunning) return;
+      binReset();
+      binRunning = true;
+      document.getElementById('bin-status').textContent = 'Berjalan...';
+      document.getElementById('bin-message').className = 'message info';
+      document.getElementById('bin-message').textContent = 'Mencari angka rahasia. Sentuh kartu nilai tengah!';
+      const mid = Math.floor((binLow + binHigh) / 2);
+      document.getElementById('bin-hint').innerHTML = '<svg class="hint-icon" viewBox="0 0 24 24" fill="none" stroke="#ffd700" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Sentuh kartu <strong>' + mid + '</strong> (nilai tengah dari rentang 1–30).';
+      addBinLog('info', 'Mulai mencari angka rahasia (1–30).');
+      updateBinCardStates();
+    }
+
+    function binCardClick(num) {
+      if (binFound) return;
+      if (!binRunning) {
+        document.getElementById('bin-message').className = 'message warning';
+        document.getElementById('bin-message').textContent = 'Tekan "Mulai Pencarian" dulu!';
+        soundWrong();
+        return;
+      }
+      if (num < binLow || num > binHigh) {
+        const card = document.getElementById('bin-card-' + num);
+        card.classList.add('wrong');
+        setTimeout(() => card.classList.remove('wrong'), 500);
+        document.getElementById('bin-message').className = 'message error';
+        document.getElementById('bin-message').textContent = 'Angka ' + num + ' di luar rentang aktif (' + binLow + '–' + binHigh + ').';
+        addBinLog('error', 'Salah! Angka ' + num + ' di luar rentang ' + binLow + '–' + binHigh + '.');
+        soundWrong();
+        return;
+      }
+
+      const mid = Math.floor((binLow + binHigh) / 2);
+      const card = document.getElementById('bin-card-' + num);
+
+      if (num !== mid) {
+        card.classList.add('wrong');
+        setTimeout(() => card.classList.remove('wrong'), 500);
+        document.getElementById('bin-message').className = 'message error';
+        document.getElementById('bin-message').textContent = 'Bukan nilai tengah! Harus memeriksa nilai tengah (' + mid + ') dulu.';
+        addBinLog('error', 'Salah! Kamu menyentuh ' + num + ', padahal nilai tengah rentang ' + binLow + '–' + binHigh + ' adalah ' + mid + '.');
+        soundWrong();
+        return;
+      }
+
+      binCurrentMid = mid;
+      binCount++;
+      document.getElementById('bin-count').textContent = binCount;
+      bumpValue('bin-count');
+      document.getElementById('bin-mid-display').textContent = binCurrentMid;
+      document.getElementById('bin-range').textContent = binLow + '–' + binHigh;
+      document.getElementById('bin-status').textContent = 'Menebak...';
+
+      card.classList.remove('clickable');
+      card.classList.add('checking');
+      soundCheck();
+      addBinLog('check', 'Tebakan #' + binCount + ': ' + binCurrentMid + ' (rentang ' + binLow + '–' + binHigh + ')');
+      updateBinProgress();
+
+      setTimeout(() => {
+        if (binCurrentMid === binTarget) {
+          binFound = true; binRunning = false;
+          card.classList.remove('checking');
+          card.classList.add('found');
+          document.getElementById('bin-status').textContent = 'Ditemukan!';
+          document.getElementById('bin-message').className = 'message success';
+          document.getElementById('bin-message').textContent = 'Angka ' + binTarget + ' ditemukan dalam ' + binCount + ' tebakan!';
+          document.getElementById('bin-hint').innerHTML = '<svg class="hint-icon" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Selesai! Angka rahasia ditemukan.';
+          addBinLog('success', 'DITEMUKAN! Angka ' + binTarget + ' dalam ' + binCount + ' tebakan.');
+          soundFound();
+          launchConfetti();
+          updateBinProgress();
+          updateBinCardStates();
+        } else if (binTarget < binCurrentMid) {
+          addBinLog('info', binTarget + ' < ' + binCurrentMid + ' → cari di kiri (' + binLow + '–' + (binCurrentMid - 1) + ')');
+          binHigh = binCurrentMid - 1;
+          card.classList.remove('checking');
+          card.classList.add('checked');
+          updateBinCardStates();
+          if (binLow > binHigh) {
+            binFound = true; binRunning = false;
+            document.getElementById('bin-status').textContent = 'Tidak Ditemukan';
+            document.getElementById('bin-message').className = 'message warning';
+            document.getElementById('bin-message').textContent = 'Angka tidak ditemukan!';
+            updateBinProgress();
+          } else {
+            const newMid = Math.floor((binLow + binHigh) / 2);
+            document.getElementById('bin-hint').innerHTML = '<svg class="hint-icon" viewBox="0 0 24 24" fill="none" stroke="#ffd700" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Lanjut! Rentang ' + binLow + '–' + binHigh + '. Sentuh nilai tengah: <strong>' + newMid + '</strong>.';
+            document.getElementById('bin-message').className = 'message info';
+            document.getElementById('bin-message').textContent = 'Angka lebih kecil. Cari di separuh kiri.';
+          }
+        } else {
+          addBinLog('info', binTarget + ' > ' + binCurrentMid + ' → cari di kanan (' + (binCurrentMid + 1) + '–' + binHigh + ')');
+          binLow = binCurrentMid + 1;
+          card.classList.remove('checking');
+          card.classList.add('checked');
+          updateBinCardStates();
+          if (binLow > binHigh) {
+            binFound = true; binRunning = false;
+            document.getElementById('bin-status').textContent = 'Tidak Ditemukan';
+            document.getElementById('bin-message').className = 'message warning';
+            document.getElementById('bin-message').textContent = 'Angka tidak ditemukan!';
+            updateBinProgress();
+          } else {
+            const newMid = Math.floor((binLow + binHigh) / 2);
+            document.getElementById('bin-hint').innerHTML = '<svg class="hint-icon" viewBox="0 0 24 24" fill="none" stroke="#ffd700" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Lanjut! Rentang ' + binLow + '–' + binHigh + '. Sentuh nilai tengah: <strong>' + newMid + '</strong>.';
+            document.getElementById('bin-message').className = 'message info';
+            document.getElementById('bin-message').textContent = 'Angka lebih besar. Cari di separuh kanan.';
+          }
+        }
+      }, 500);
+    }
+
+    function binAuto() {
+      soundClick();
+      if (binFound) return;
+      if (!binRunning) binStart();
+      const speed = parseInt(binSpeedSlider.value);
+      const run = () => {
+        if (binFound) { clearInterval(binAutoTimer); return; }
+        if (binLow > binHigh) { clearInterval(binAutoTimer); return; }
+        const mid = Math.floor((binLow + binHigh) / 2);
+        binCardClick(mid);
+        if (binFound) clearInterval(binAutoTimer);
+      };
+      binAutoTimer = setInterval(run, speed + 500);
+      run();
+    }
+
+    function binReset() {
+      clearInterval(binAutoTimer);
+      binLow = 1; binHigh = BIN_MAX; binCount = 0;
+      binRunning = false; binFound = false; binCurrentMid = null;
+      document.getElementById('bin-count').textContent = '0';
+      document.getElementById('bin-range').textContent = '1–30';
+      document.getElementById('bin-status').textContent = 'Siap';
+      document.getElementById('bin-mid-display').textContent = '-';
+      document.getElementById('bin-message').className = 'message info';
+      document.getElementById('bin-message').textContent = 'Tekan "Mulai Pencarian", lalu sentuh kartu nilai tengah.';
+      document.getElementById('bin-hint').innerHTML = '<svg class="hint-icon" viewBox="0 0 24 24" fill="none" stroke="#ffd700" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Sentuh kartu <strong>nilai tengah</strong> dari rentang 1–30 (yaitu <strong>15</strong>).';
+      document.getElementById('bin-log').innerHTML = '<div class="log-entry info">Log tebakan akan muncul di sini...</div>';
+      document.getElementById('bin-progress-bar').style.width = '0%';
+      document.getElementById('bin-progress-label').textContent = '0 / ' + BIN_MAX_TEBAKAN + ' tebakan';
+      document.getElementById('bin-progress-wrapper').classList.remove('done');
+      renderBinCards();
+      updateBinCardStates();
+    }
+
+    function addBinLog(type, text) {
+      const log = document.getElementById('bin-log');
+      const entry = document.createElement('div');
+      entry.className = 'log-entry ' + type;
+      entry.textContent = text;
+      log.appendChild(entry);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    /* ============================================================
+       INISIALISASI
+       ============================================================ */
+    renderSeqCards();
+    renderBinCards();
+    binReset();
+    seqReset();
+  </script>
+</body>
+
+</html>
