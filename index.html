@@ -328,6 +328,47 @@
       font-size: 0.95em;
     }
 
+    /* PERBAIKAN #1: kotak "kenapa penting" */
+    .why-box {
+      background: rgba(255, 215, 0, 0.08);
+      border: 1px dashed rgba(255, 215, 0, 0.4);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-top: 14px;
+      position: relative;
+      font-size: 0.92em;
+      line-height: 1.6;
+    }
+
+    .why-box strong {
+      color: var(--emas);
+    }
+
+    /* PERBAIKAN #2: banner perbandingan */
+    .compare-banner {
+      background: linear-gradient(135deg, rgba(126, 87, 194, 0.25) 0%, rgba(42, 82, 152, 0.25) 100%);
+      border: 1px solid rgba(126, 87, 194, 0.5);
+      border-radius: 14px;
+      padding: 14px 20px;
+      margin: 18px 0;
+      text-align: center;
+      font-size: 0.95em;
+      line-height: 1.6;
+      display: none;
+    }
+
+    .compare-banner.show {
+      display: block;
+      animation: panelIn 0.5s ease;
+    }
+
+    .compare-banner .big {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 1.15em;
+      color: var(--emas);
+    }
+
     /* ===== KARTU ===== */
     .cards-grid {
       display: grid;
@@ -450,9 +491,9 @@
     }
 
     .card.checked {
-      background: rgba(30, 60, 114, 0.3);
-      opacity: 0.3;
-      border-color: rgba(255, 255, 255, 0.1);
+      background: rgba(30, 60, 114, 0.45);
+      opacity: 0.5;
+      border-color: rgba(255, 255, 255, 0.15);
       cursor: not-allowed;
       transform: scale(0.95);
       filter: grayscale(0.5);
@@ -485,9 +526,21 @@
       }
     }
 
-    .card.target {
-      border: 3px dashed var(--emas);
-      box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    .card .target-badge {
+      position: absolute;
+      top: 4px;
+      right: 6px;
+      font-size: 0.55em;
+      background: var(--emas);
+      color: var(--biru-tua);
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-weight: 800;
+      display: none;
+    }
+
+    .card.show-target .target-badge {
+      display: block;
     }
 
     .card.in-range {
@@ -534,7 +587,7 @@
       }
     }
 
-    /* ===== PROGRESS BAR (STICKY — TIDAK KETUTUPAN) ===== */
+    /* ===== PROGRESS BAR ===== */
     .progress-wrapper {
       position: sticky;
       top: 10px;
@@ -975,6 +1028,7 @@
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
+      line-height: 1.5;
     }
 
     .message::before {
@@ -1062,6 +1116,7 @@
       justify-content: center;
       gap: 10px;
       animation: hintPulse 2s ease-in-out infinite;
+      flex-wrap: wrap;
     }
 
     @keyframes hintPulse {
@@ -1234,7 +1289,6 @@
 
 <body>
 
-  <!-- Tombol mute suara -->
   <button class="mute-btn" id="mute-btn" onclick="toggleMute()" title="Suara aktif/mati">
     <svg id="mute-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="#ffd700" stroke="none" />
@@ -1245,7 +1299,6 @@
 
   <div class="container">
 
-    <!-- HEADER -->
     <div class="header">
       <svg class="header-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -1265,11 +1318,10 @@
     </div>
     <p class="subtitle">
       <span class="dot"></span>
-      Sentuh kartu secara berurutan — SMKN 4 Banjarmasin
+      Berpikir seperti komputer — SMKN 4 Banjarmasin
       <span class="dot"></span>
     </p>
 
-    <!-- TAB -->
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab('sequential')">
         <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1306,12 +1358,27 @@
         <p><strong>Syarat data:</strong> Bebas — boleh terurut, boleh tidak.</p>
         <p><strong>Aturan main:</strong> Sentuh kartu <span style="color:#ffd700;font-weight:700;">mulai dari #1, lalu
             #2, #3, ...</span> secara berurutan.</p>
+        <div class="why-box">
+          <strong>Kenapa penting?</strong> Karena memeriksa satu per satu, waktu pencarian tumbuh sebanding jumlah data.
+          15 data = maksimal <strong>15 pemeriksaan</strong>. Komputer <em>tidak tahu</em> di mana target berada —
+          ia benar-benar harus membuka satu per satu.
+        </div>
       </div>
 
       <div class="input-group">
         <label>Target nama:</label>
         <input type="text" id="seq-target" value="DEWI" maxlength="10" style="text-transform:uppercase;">
         <button class="btn btn-secondary" onclick="setSeqTarget()">Set Target</button>
+        <button class="btn btn-secondary" onclick="seqRandomTarget()">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <circle cx="15.5" cy="15.5" r="1.5" />
+            <circle cx="15.5" cy="8.5" r="1.5" />
+            <circle cx="8.5" cy="15.5" r="1.5" />
+          </svg>
+          Acak
+        </button>
       </div>
 
       <div class="controls">
@@ -1336,7 +1403,6 @@
         </button>
       </div>
 
-      <!-- PROGRESS BAR — Sequential (STICKY) -->
       <div class="progress-wrapper" id="seq-progress-wrapper">
         <div class="progress-header">
           <div class="title">
@@ -1376,6 +1442,10 @@
 
       <div class="stats">
         <div class="stat-box">
+          <div class="label">Target</div>
+          <div class="value" id="seq-target-display" style="font-size:1.5em;">DEWI</div>
+        </div>
+        <div class="stat-box">
           <div class="label">Pemeriksaan</div>
           <div class="value" id="seq-count">0</div>
         </div>
@@ -1387,6 +1457,12 @@
           <div class="label">Status</div>
           <div class="value" id="seq-status" style="font-size:1.2em;">Siap</div>
         </div>
+      </div>
+
+      <div class="compare-banner" id="seq-compare">
+        Bandingkan: Sequential memeriksa <span class="big" id="seq-cmp-count">0</span> kartu.
+        Binary Search hanya butuh <span class="big">±5</span> tebakan untuk 30 data —
+        <strong>tetapi syaratnya data harus terurut!</strong>
       </div>
 
       <div class="cards-grid" id="seq-cards"></div>
@@ -1413,6 +1489,13 @@
         <p><strong>Syarat data:</strong> <span style="color:#ffd700;font-weight:700;">WAJIB sudah terurut!</span></p>
         <p><strong>Aturan main:</strong> Sentuh kartu <span style="color:#ffd700;font-weight:700;">nilai tengah dari
             rentang aktif</span>.</p>
+        <div class="why-box">
+          <strong>Kenapa penting?</strong> Setiap tebakan membuang <strong>separuh</strong> data. 30 data hanya butuh
+          ±5 tebakan (bukan 30!). <br>
+          <strong>Kenapa pakai angka, bukan nama?</strong> Karena Binary Search <em>wajib</em> data terurut.
+          Angka 1–30 sudah terurut; daftar nama di tab Sequential tidak. Coba bayangkan mencari "DEWI" dengan
+          Binary di daftar nama acak — mustahil!
+        </div>
       </div>
 
       <div class="input-group">
@@ -1453,7 +1536,6 @@
         </button>
       </div>
 
-      <!-- PROGRESS BAR — Binary (STICKY) -->
       <div class="progress-wrapper" id="bin-progress-wrapper">
         <div class="progress-header">
           <div class="title">
@@ -1462,7 +1544,7 @@
             </svg>
             Progress Pencarian
           </div>
-          <div class="count" id="bin-progress-label">0 / 5 tebakan</div>
+          <div class="count" id="bin-progress-label">0 / 6 tebakan</div>
         </div>
         <div class="progress-container">
           <div class="progress-bar" id="bin-progress-bar" style="width:0%"></div>
@@ -1473,6 +1555,7 @@
           <span>3</span>
           <span>4</span>
           <span>5</span>
+          <span>6</span>
         </div>
       </div>
 
@@ -1492,6 +1575,10 @@
       </div>
 
       <div class="stats">
+        <div class="stat-box">
+          <div class="label">Target</div>
+          <div class="value" id="bin-target-display" style="font-size:1.5em;">23</div>
+        </div>
         <div class="stat-box">
           <div class="label">Tebakan</div>
           <div class="value" id="bin-count">0</div>
@@ -1513,6 +1600,11 @@
           -</div>
       </div>
 
+      <div class="compare-banner" id="bin-compare">
+        Bandingkan: Binary hanya butuh <span class="big" id="bin-cmp-count">0</span> tebakan.
+        Sequential Search untuk 30 data bisa sampai <span class="big">30</span> pemeriksaan!
+      </div>
+
       <div class="cards-grid" id="bin-cards"></div>
 
       <div class="message info" id="bin-message">Tekan "Mulai Pencarian", lalu sentuh kartu nilai tengah.</div>
@@ -1525,7 +1617,7 @@
 
   <script>
     /* ============================================================
-       AUDIO (Web Audio API)
+       AUDIO
        ============================================================ */
     let audioCtx = null;
     let soundEnabled = true;
@@ -1616,9 +1708,6 @@
       }
     }
 
-    /* ============================================================
-       ANIMASI VALUE BUMP
-       ============================================================ */
     function bumpValue(id) {
       const el = document.getElementById(id);
       el.classList.remove('bump');
@@ -1648,9 +1737,20 @@
         return;
       }
       seqTargetName = val;
+      document.getElementById('seq-target-display').textContent = val;
       seqReset();
       document.getElementById('seq-message').className = 'message info';
       document.getElementById('seq-message').textContent = 'Target diubah ke "' + seqTargetName + '". Tekan "Mulai Pencarian".';
+    }
+
+    function seqRandomTarget() {
+      soundClick();
+      seqTargetName = seqNames[Math.floor(Math.random() * seqNames.length)];
+      document.getElementById('seq-target').value = seqTargetName;
+      document.getElementById('seq-target-display').textContent = seqTargetName;
+      seqReset();
+      document.getElementById('seq-message').className = 'message info';
+      document.getElementById('seq-message').textContent = 'Target diacak ke "' + seqTargetName + '". Tekan "Mulai Pencarian".';
     }
 
     function renderSeqCards() {
@@ -1661,8 +1761,7 @@
         card.className = 'card';
         card.id = 'seq-card-' + i;
         card.style.animationDelay = (i * 0.04) + 's';
-        card.innerHTML = '<div class="index">#' + (i + 1) + '</div>' + name;
-        if (name === seqTargetName) card.classList.add('target');
+        card.innerHTML = '<div class="index">#' + (i + 1) + '</div>' + name + '<div class="target-badge">TARGET</div>';
         card.onclick = () => seqCardClick(i);
         container.appendChild(card);
       });
@@ -1680,15 +1779,10 @@
       const bar = document.getElementById('seq-progress-bar');
       const label = document.getElementById('seq-progress-label');
       const wrapper = document.getElementById('seq-progress-wrapper');
-
       bar.style.width = pct + '%';
       label.textContent = seqCount + ' / ' + seqNames.length;
-
-      if (seqFound) {
-        wrapper.classList.add('done');
-      } else {
-        wrapper.classList.remove('done');
-      }
+      if (seqFound) wrapper.classList.add('done');
+      else wrapper.classList.remove('done');
     }
 
     function seqStart() {
@@ -1696,6 +1790,8 @@
       if (seqRunning) return;
       seqReset();
       seqRunning = true;
+      // PERBAIKAN #13: aktifkan tombol otomatis setelah pencarian dimulai
+      document.getElementById('seq-auto').disabled = false;
       document.getElementById('seq-status').textContent = 'Berjalan...';
       document.getElementById('seq-message').className = 'message info';
       document.getElementById('seq-message').textContent = 'Mencari "' + seqTargetName + '". Sentuh kartu #1!';
@@ -1717,8 +1813,8 @@
         card.classList.add('wrong');
         setTimeout(() => card.classList.remove('wrong'), 500);
         document.getElementById('seq-message').className = 'message error';
-        document.getElementById('seq-message').textContent = 'Salah urutan! Sequential Search harus memeriksa dari #' + (seqIndex + 1) + ' dulu.';
-        addSeqLog('error', 'Salah! Kamu menyentuh #' + (idx + 1) + ' (' + seqNames[idx] + '), padahal urutan yang benar sekarang adalah #' + (seqIndex + 1) + ' (' + seqNames[seqIndex] + ').');
+        document.getElementById('seq-message').innerHTML = 'Salah urutan! Kamu "sudah tahu" <b>' + seqNames[idx] + '</b> ada di #' + (idx + 1) + ' — tetapi <b>komputer tidak tahu</b>. Komputer hanya bisa memeriksa satu per satu dari awal. Itulah Sequential Search.';
+        addSeqLog('error', 'Salah! Kamu menyentuh #' + (idx + 1) + ' (' + seqNames[idx] + '), padahal komputer harus memeriksa #' + (seqIndex + 1) + ' (' + seqNames[seqIndex] + ') dulu.');
         soundWrong();
         return;
       }
@@ -1742,6 +1838,7 @@
           seqFound = true; seqRunning = false;
           card.classList.remove('checking');
           card.classList.add('found');
+          card.classList.add('show-target');
           document.getElementById('seq-status').textContent = 'Ditemukan!';
           document.getElementById('seq-message').className = 'message success';
           document.getElementById('seq-message').textContent = '"' + seqTargetName + '" ditemukan di posisi #' + (idx + 1) + ' setelah ' + seqCount + ' pemeriksaan!';
@@ -1751,6 +1848,8 @@
           launchConfetti();
           updateSeqProgress();
           updateSeqClickable();
+          document.getElementById('seq-cmp-count').textContent = seqCount;
+          document.getElementById('seq-compare').classList.add('show');
         } else {
           card.classList.remove('checking');
           card.classList.add('checked');
@@ -1764,6 +1863,8 @@
             document.getElementById('seq-hint').innerHTML = 'Selesai — target tidak ditemukan.';
             updateSeqProgress();
             updateSeqClickable();
+            document.getElementById('seq-cmp-count').textContent = seqCount;
+            document.getElementById('seq-compare').classList.add('show');
           } else {
             document.getElementById('seq-status').textContent = 'Berjalan...';
             document.getElementById('seq-hint').innerHTML = '<svg class="hint-icon" viewBox="0 0 24 24" fill="none" stroke="#ffd700" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Lanjut! Sentuh kartu <strong>#' + (seqIndex + 1) + '</strong> (' + seqNames[seqIndex] + ').';
@@ -1776,6 +1877,7 @@
     function seqAuto() {
       soundClick();
       if (seqFound) return;
+      clearInterval(seqAutoTimer);
       if (!seqRunning) seqStart();
       const speed = parseInt(seqSpeedSlider.value);
       const run = () => {
@@ -1793,6 +1895,7 @@
       document.getElementById('seq-count').textContent = '0';
       document.getElementById('seq-pos').textContent = '-';
       document.getElementById('seq-status').textContent = 'Siap';
+      document.getElementById('seq-target-display').textContent = seqTargetName;
       document.getElementById('seq-message').className = 'message info';
       document.getElementById('seq-message').textContent = 'Tekan "Mulai Pencarian", lalu sentuh kartu #1.';
       document.getElementById('seq-hint').innerHTML = '<svg class="hint-icon" viewBox="0 0 24 24" fill="none" stroke="#ffd700" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Sentuh kartu <strong>#1</strong> dulu untuk memulai pencarian.';
@@ -1800,6 +1903,9 @@
       document.getElementById('seq-progress-bar').style.width = '0%';
       document.getElementById('seq-progress-label').textContent = '0 / 15';
       document.getElementById('seq-progress-wrapper').classList.remove('done');
+      document.getElementById('seq-compare').classList.remove('show');
+      // PERBAIKAN #13: nonaktifkan kembali tombol otomatis saat reset
+      document.getElementById('seq-auto').disabled = true;
       renderSeqCards();
       updateSeqClickable();
     }
@@ -1817,7 +1923,7 @@
        BINARY SEARCH
        ============================================================ */
     const BIN_MAX = 30;
-    const BIN_MAX_TEBAKAN = 5; // log2(30) ≈ 5
+    const BIN_MAX_TEBAKAN = 6;
     let binTarget = 23, binLow = 1, binHigh = 30, binCount = 0;
     let binRunning = false, binFound = false, binAutoTimer = null, binCurrentMid = null;
 
@@ -1836,6 +1942,7 @@
         return;
       }
       binTarget = val;
+      document.getElementById('bin-target-display').textContent = val;
       binReset();
       document.getElementById('bin-message').className = 'message info';
       document.getElementById('bin-message').textContent = 'Angka rahasia diubah. Tekan "Mulai Pencarian".';
@@ -1845,6 +1952,7 @@
       soundClick();
       binTarget = Math.floor(Math.random() * 30) + 1;
       document.getElementById('bin-target').value = binTarget;
+      document.getElementById('bin-target-display').textContent = binTarget;
       binReset();
       document.getElementById('bin-message').className = 'message info';
       document.getElementById('bin-message').textContent = 'Angka rahasia diacak! Tekan "Mulai Pencarian".';
@@ -1885,15 +1993,10 @@
       const bar = document.getElementById('bin-progress-bar');
       const label = document.getElementById('bin-progress-label');
       const wrapper = document.getElementById('bin-progress-wrapper');
-
       bar.style.width = pct + '%';
       label.textContent = binCount + ' / ' + BIN_MAX_TEBAKAN + ' tebakan';
-
-      if (binFound) {
-        wrapper.classList.add('done');
-      } else {
-        wrapper.classList.remove('done');
-      }
+      if (binFound) wrapper.classList.add('done');
+      else wrapper.classList.remove('done');
     }
 
     function binStart() {
@@ -1901,6 +2004,8 @@
       if (binRunning) return;
       binReset();
       binRunning = true;
+      // PERBAIKAN #13: aktifkan tombol otomatis setelah pencarian dimulai
+      document.getElementById('bin-auto').disabled = false;
       document.getElementById('bin-status').textContent = 'Berjalan...';
       document.getElementById('bin-message').className = 'message info';
       document.getElementById('bin-message').textContent = 'Mencari angka rahasia. Sentuh kartu nilai tengah!';
@@ -1936,7 +2041,7 @@
         card.classList.add('wrong');
         setTimeout(() => card.classList.remove('wrong'), 500);
         document.getElementById('bin-message').className = 'message error';
-        document.getElementById('bin-message').textContent = 'Bukan nilai tengah! Harus memeriksa nilai tengah (' + mid + ') dulu.';
+        document.getElementById('bin-message').innerHTML = 'Bukan nilai tengah! Binary Search <b>selalu</b> memeriksa nilai tengah (' + mid + ') agar bisa membuang separuh data.';
         addBinLog('error', 'Salah! Kamu menyentuh ' + num + ', padahal nilai tengah rentang ' + binLow + '–' + binHigh + ' adalah ' + mid + '.');
         soundWrong();
         return;
@@ -1970,6 +2075,8 @@
           launchConfetti();
           updateBinProgress();
           updateBinCardStates();
+          document.getElementById('bin-cmp-count').textContent = binCount;
+          document.getElementById('bin-compare').classList.add('show');
         } else if (binTarget < binCurrentMid) {
           addBinLog('info', binTarget + ' < ' + binCurrentMid + ' → cari di kiri (' + binLow + '–' + (binCurrentMid - 1) + ')');
           binHigh = binCurrentMid - 1;
@@ -2013,6 +2120,7 @@
     function binAuto() {
       soundClick();
       if (binFound) return;
+      clearInterval(binAutoTimer);
       if (!binRunning) binStart();
       const speed = parseInt(binSpeedSlider.value);
       const run = () => {
@@ -2034,6 +2142,7 @@
       document.getElementById('bin-range').textContent = '1–30';
       document.getElementById('bin-status').textContent = 'Siap';
       document.getElementById('bin-mid-display').textContent = '-';
+      document.getElementById('bin-target-display').textContent = binTarget;
       document.getElementById('bin-message').className = 'message info';
       document.getElementById('bin-message').textContent = 'Tekan "Mulai Pencarian", lalu sentuh kartu nilai tengah.';
       document.getElementById('bin-hint').innerHTML = '<svg class="hint-icon" viewBox="0 0 24 24" fill="none" stroke="#ffd700" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Sentuh kartu <strong>nilai tengah</strong> dari rentang 1–30 (yaitu <strong>15</strong>).';
@@ -2041,6 +2150,9 @@
       document.getElementById('bin-progress-bar').style.width = '0%';
       document.getElementById('bin-progress-label').textContent = '0 / ' + BIN_MAX_TEBAKAN + ' tebakan';
       document.getElementById('bin-progress-wrapper').classList.remove('done');
+      document.getElementById('bin-compare').classList.remove('show');
+      // PERBAIKAN #13: nonaktifkan kembali tombol otomatis saat reset
+      document.getElementById('bin-auto').disabled = true;
       renderBinCards();
       updateBinCardStates();
     }
